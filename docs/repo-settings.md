@@ -1,7 +1,12 @@
 # Repository settings (apply at publish time)
 
-> These are prepared in advance; applying them requires creating the repo, which is
-> gated behind explicit confirmation (⛔). Do not run `gh repo create` / push until approved.
+> Status (2026-11-10): these settings were applied by a parallel session of the same
+> Noah Forge pipeline. `LucasXlab/vericode` is **public**, created at 2026-11-10T07:12:14Z,
+> with the description and all 10 topics below, plus 5 `good first issue` items.
+> Verified with `gh repo view LucasXlab/vericode` and `gh issue list` (raw output kept in
+> `phase7/evidence/repo-facts.txt` in the workspace). This document is now a record of the
+> applied settings, not a to-do list. Posting to HN / Reddit / X is still gated behind
+> explicit user confirmation and has **not** been executed.
 
 ## Description (≤ 350 chars)
 ```

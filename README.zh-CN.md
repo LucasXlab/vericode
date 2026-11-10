@@ -40,8 +40,16 @@ $ vericode .
 Result: All checks passed (1 skipped)
 ```
 
-> 演示 GIF 由 [`demo.tape`](demo.tape) 经 [`vhs`](https://github.com/charmbracelet/vhs) 生成：
-> `vhs demo.tape` → `assets/demo.gif`。
+> GIF 由**真实 `vericode` stdout** 渲染而成（采集命令 `vericode . --no-cve --exclude tests`）。
+> 本环境没有 `vhs` / `asciinema`，因此是终端帧渲染，不是屏幕录屏。保留 [`demo.tape`](demo.tape)，
+> 在装有 vhs 的机器上执行 `vhs demo.tape` 可生成真正的录屏。
+
+| 终端报告 | CI 用 JSON | 命令帮助 |
+|---|---|---|
+| ![report](assets/feature-report.png) | ![json](assets/feature-json.png) | ![help](assets/feature-help.png) |
+
+> **已知限制**：CVE 查询失败会静默降级为空结果。「未发现已知漏洞」表示*没有返回结论*，
+> 不等于*查询已验证*。离线请用 `--no-cve`，且不要把这行当作安全保证。
 
 ## 为什么需要它
 

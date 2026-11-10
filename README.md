@@ -40,8 +40,18 @@ $ vericode .
 Result: All checks passed (1 skipped)
 ```
 
-> The demo GIF is generated from [`demo.tape`](demo.tape) with [`vhs`](https://github.com/charmbracelet/vhs):
-> `vhs demo.tape` → `assets/demo.gif`.
+> The GIF is rendered from **real `vericode` stdout** (captured with
+> `vericode . --no-cve --exclude tests`). This environment has no `vhs` / `asciinema`,
+> so these are terminal renderings rather than a screen recording. [`demo.tape`](demo.tape)
+> is kept so `vhs demo.tape` can produce a true recording where vhs is available.
+
+| Pretty report | JSON for CI | CLI help |
+|---|---|---|
+| ![report](assets/feature-report.png) | ![json](assets/feature-json.png) | ![help](assets/feature-help.png) |
+
+> **Known limit:** a failing CVE lookup degrades to an empty result. A green
+> "No known vulnerabilities" line means *no findings returned*, not *lookup verified*.
+> Use `--no-cve` when offline, and don't treat that line as a security guarantee.
 
 ## Why
 
