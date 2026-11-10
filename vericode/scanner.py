@@ -156,6 +156,19 @@ def scan_text(text: str, filename: str = "<text>") -> list[Finding]:
 
 def scan_path(root: Path, exclude: set[str] | None = None) -> Iterator[Finding]:
     exclude = exclude or set()
+    if root.is_file():
+        if not _is_text(root):
+            return
+        if str(root) in exclude or root.name in exclude:
+            return
+        try:
+            text = root.read_text(encoding="utf-8", errors="ignore")
+        except OSError:
+            return
+        for f in scan_text(text, root.name):
+            yield f
+        return
+
     for path in root.rglob("*"):
         if not path.is_file():
             continue

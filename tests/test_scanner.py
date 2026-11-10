@@ -53,3 +53,17 @@ def test_scan_path_skips_git(tmp_path):
 def test_shannon_entropy_uniform_high():
     assert scanner.shannon_entropy("abcdefgh") > 2.5
     assert scanner.shannon_entropy("") == 0.0
+
+
+def test_scan_path_single_file(tmp_path):
+    file_path = tmp_path / "snippet.py"
+    secret = "sk_live_" + "abcdefghijklmnopqrstuvwxyz012345"
+    file_path.write_text("api_key = '" + secret + "'\n")
+
+    findings = list(scanner.scan_path(file_path))
+    assert len(findings) >= 1
+    assert any("Stripe" in f.rule or "Generic" in f.rule for f in findings)
+    assert findings[0].file == "snippet.py"
+
+    # Exclude works for single file
+    assert list(scanner.scan_path(file_path, exclude={"snippet.py"})) == []
