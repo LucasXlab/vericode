@@ -4,6 +4,7 @@ from unittest.mock import patch
 
 from click.testing import CliRunner
 
+from vericode import __version__
 from vericode.cli import main
 
 
@@ -31,3 +32,11 @@ def test_strict_passes_when_everything_is_ok():
     with patch("vericode.cli.run", return_value=_result(["pass", "skip"])):
         out = CliRunner().invoke(main, [".", "--strict"])
     assert out.exit_code == 0
+
+
+def test_version_option():
+    result = CliRunner().invoke(main, ["--version"])
+
+    assert result.exit_code == 0
+    assert __version__ in result.output
+    

@@ -9,10 +9,12 @@ from pathlib import Path
 import click
 from rich.console import Console
 
+from . import __version__
 from .core import run
 
 
 @click.command()
+@click.version_option(version=__version__)
 @click.argument("target", default=".", type=click.Path(exists=True, path_type=Path))
 @click.option("--json", "json_output", is_flag=True, help="Output JSON instead of a pretty report.")
 @click.option(
