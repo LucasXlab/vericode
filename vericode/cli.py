@@ -45,7 +45,7 @@ def main(
 
     if strict:
         bad = (
-            any(c["status"] == "fail" for c in result["checks"])
+            any(c["status"] in ("fail", "error") for c in result["checks"])
             or bool(result["secrets"])
             or bool(result["cves"])
         )
