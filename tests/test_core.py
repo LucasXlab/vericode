@@ -54,7 +54,9 @@ def test_json_output_shape(tmp_path, monkeypatch):
     monkeypatch.setattr(deps, "query_osv", lambda d: [])
     (tmp_path / "requirements.txt").write_text("")
     res = core.run(tmp_path, json_output=True, no_cve=True)
-    assert {"target", "project_type", "checks", "secrets", "cves", "summary", "ok"} <= set(res.keys())
+    assert {"target", "project_type", "checks", "secrets", "cves", "summary", "ok"} <= set(
+        res.keys()
+    )
     assert res["ok"] is True
     assert "[" not in res["summary"], "JSON summary must be plain text, no rich markup"
 

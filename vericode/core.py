@@ -31,9 +31,7 @@ def run(
         dependencies = deps.parse_dependencies(root, ptype)
         cves = [v.to_dict() for v in deps.query_osv(dependencies)]
 
-    ok = not (
-        any(c["status"] in ("fail", "error") for c in checks) or secrets or cves
-    )
+    ok = not (any(c["status"] in ("fail", "error") for c in checks) or secrets or cves)
     result: dict[str, Any] = {
         "target": str(root),
         "project_type": ptype,
