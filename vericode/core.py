@@ -31,12 +31,16 @@ def run(
         dependencies = deps.parse_dependencies(root, ptype)
         cves = [v.to_dict() for v in deps.query_osv(dependencies)]
 
+    ok = not (
+        any(c["status"] in ("fail", "error") for c in checks) or secrets or cves
+    )
     result: dict[str, Any] = {
         "target": str(root),
         "project_type": ptype,
         "checks": checks,
         "secrets": secrets,
         "cves": cves,
+        "ok": ok,
         "summary": _summarize(checks, secrets, cves),
     }
 
@@ -46,6 +50,7 @@ def run(
 
 
 def _summarize(checks: list[dict], secrets: list[dict], cves: list[dict]) -> str:
+    """Plain-text summary (no rich markup — markup belongs to the report layer)."""
     fails = sum(1 for c in checks if c["status"] == "fail")
     skips = sum(1 for c in checks if c["status"] == "skip")
     parts: list[str] = []
@@ -59,5 +64,5 @@ def _summarize(checks: list[dict], secrets: list[dict], cves: list[dict]) -> str
         base = "All checks passed"
         if skips:
             base += f" ({skips} skipped)"
-        return "[green]" + base + "[/]"
-    return "[red]" + "; ".join(parts) + "[/]"
+        return base
+    return "; ".join(parts)

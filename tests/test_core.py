@@ -16,6 +16,7 @@ def test_run_finds_secret(tmp_path, monkeypatch):
     (tmp_path / "requirements.txt").write_text("")
     result = core.run(tmp_path, no_cve=True)
     assert result["secrets"]
+    assert result["ok"] is False
     assert result["project_type"] == "python"
     assert any(c["name"] == "typecheck" for c in result["checks"])
 
@@ -53,7 +54,9 @@ def test_json_output_shape(tmp_path, monkeypatch):
     monkeypatch.setattr(deps, "query_osv", lambda d: [])
     (tmp_path / "requirements.txt").write_text("")
     res = core.run(tmp_path, json_output=True, no_cve=True)
-    assert {"target", "project_type", "checks", "secrets", "cves", "summary"} <= set(res.keys())
+    assert {"target", "project_type", "checks", "secrets", "cves", "summary", "ok"} <= set(res.keys())
+    assert res["ok"] is True
+    assert "[" not in res["summary"], "JSON summary must be plain text, no rich markup"
 
 
 def test_render_report(capsys, monkeypatch):
