@@ -11,8 +11,8 @@
 
 [![CI](https://github.com/LucasXlab/vericode/actions/workflows/ci.yml/badge.svg)](https://github.com/LucasXlab/vericode/actions)
 [![MIT License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
-[![Python](https://img.shields.io/pypi/pyversions/vericode)](https://pypi.org/project/vericode/)
-[![PyPI](https://img.shields.io/pypi/v/vericode)](https://pypi.org/project/vericode/)
+[![Python 3.9+](https://img.shields.io/badge/python-3.9%2B-blue)](https://www.python.org/)
+[![从源码安装](https://img.shields.io/badge/install-from%20source-9cf)](https://github.com/LucasXlab/vericode#quick-start)
 
 </div>
 
@@ -20,8 +20,10 @@
 
 ## 演示
 
+![VeriCode 扫描演示](assets/demo.gif)
+
 ```bash
-$ pip install vericode
+$ pip install -e .
 $ cd my-ai-project
 $ vericode .
 
@@ -38,8 +40,16 @@ $ vericode .
 Result: All checks passed (1 skipped)
 ```
 
-> 演示 GIF 由 [`demo.tape`](demo.tape) 经 [`vhs`](https://github.com/charmbracelet/vhs) 生成：
-> `vhs demo.tape` → `assets/demo.gif`。
+> GIF 由**真实 `vericode` stdout** 渲染而成（采集命令 `vericode . --no-cve --exclude tests`）。
+> 本环境没有 `vhs` / `asciinema`，因此是终端帧渲染，不是屏幕录屏。保留 [`demo.tape`](demo.tape)，
+> 在装有 vhs 的机器上执行 `vhs demo.tape` 可生成真正的录屏。
+
+| 终端报告 | CI 用 JSON | 命令帮助 |
+|---|---|---|
+| ![report](assets/feature-report.png) | ![json](assets/feature-json.png) | ![help](assets/feature-help.png) |
+
+> **已知限制**：CVE 查询失败会静默降级为空结果。「未发现已知漏洞」表示*没有返回结论*，
+> 不等于*查询已验证*。离线请用 `--no-cve`，且不要把这行当作安全保证。
 
 ## 为什么需要它
 
@@ -57,10 +67,14 @@ AI 编码 Agent 写出来的代码「看起来对」但常常不对。VeriCode �
 ## 快速开始
 
 ```bash
-pip install vericode
+git clone https://github.com/LucasXlab/vericode.git && cd vericode
+pip install -e .
 vericode .                 # 扫描当前项目
-vericode . --strict       # CI 门禁：有任何问题即非零退出
 ```
+
+> **安装说明**：PyPI 上的 `vericode` 名字已被 2025 年另一个作者发布的同名包
+> （pylint/flake8 包装器）占用。本项目改用 `vericode-cli` 作为发行名、命令仍是 `vericode`；
+> 在改用独立名字发布前，请从本仓库安装，直接 `pip install vericode` 会装错工具。
 
 ## 功能
 

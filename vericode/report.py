@@ -58,4 +58,5 @@ def render_report(report: dict[str, Any], console: Console | None = None) -> Non
             console.print("[green]✓ No known vulnerabilities in dependencies[/]")
 
     console.print()
-    console.print(f"[bold]Result:[/] {report.get('summary')}")
+    color = "green" if report.get("ok", True) else "red"
+    console.print(f"[bold]Result:[/] [{color}]{report.get('summary')}[/]")

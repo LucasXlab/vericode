@@ -11,8 +11,8 @@ One command. Zero setup. Your code never leaves your machine (CVE lookup is keyl
 
 [![CI](https://github.com/LucasXlab/vericode/actions/workflows/ci.yml/badge.svg)](https://github.com/LucasXlab/vericode/actions)
 [![MIT License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
-[![Python](https://img.shields.io/pypi/pyversions/vericode)](https://pypi.org/project/vericode/)
-[![PyPI](https://img.shields.io/pypi/v/vericode)](https://pypi.org/project/vericode/)
+[![Python 3.9+](https://img.shields.io/badge/python-3.9%2B-blue)](https://www.python.org/)
+[![Install from source](https://img.shields.io/badge/install-from%20source-9cf)](https://github.com/LucasXlab/vericode#quick-start)
 
 </div>
 
@@ -20,8 +20,10 @@ One command. Zero setup. Your code never leaves your machine (CVE lookup is keyl
 
 ## Demo
 
+![VeriCode scanning a project](assets/demo.gif)
+
 ```bash
-$ pip install vericode
+$ pip install -e .
 $ cd my-ai-project
 $ vericode .
 
@@ -38,8 +40,18 @@ $ vericode .
 Result: All checks passed (1 skipped)
 ```
 
-> The demo GIF is generated from [`demo.tape`](demo.tape) with [`vhs`](https://github.com/charmbracelet/vhs):
-> `vhs demo.tape` → `assets/demo.gif`.
+> The GIF is rendered from **real `vericode` stdout** (captured with
+> `vericode . --no-cve --exclude tests`). This environment has no `vhs` / `asciinema`,
+> so these are terminal renderings rather than a screen recording. [`demo.tape`](demo.tape)
+> is kept so `vhs demo.tape` can produce a true recording where vhs is available.
+
+| Pretty report | JSON for CI | CLI help |
+|---|---|---|
+| ![report](assets/feature-report.png) | ![json](assets/feature-json.png) | ![help](assets/feature-help.png) |
+
+> **Known limit:** a failing CVE lookup degrades to an empty result. A green
+> "No known vulnerabilities" line means *no findings returned*, not *lookup verified*.
+> Use `--no-cve` when offline, and don't treat that line as a security guarantee.
 
 ## Why
 
@@ -57,10 +69,16 @@ AI coding agents write code that *looks* right but often isn't. VeriCode is the
 ## Quick Start
 
 ```bash
-pip install vericode
+git clone https://github.com/LucasXlab/vericode.git && cd vericode
+pip install -e .
 vericode .                 # scan the current project
-vericode . --strict       # CI gate: non-zero exit on any problem
 ```
+
+> **Install note:** the PyPI name `vericode` is already taken by an unrelated
+> 2025 package (a pylint/flake8 wrapper by a different author). Until this project
+> publishes under a distinct name, install from the repository above — `pip install vericode`
+> would install the wrong tool. The distribution name in `pyproject.toml` is `vericode-cli`;
+> the command is still `vericode`.
 
 ## Features
 

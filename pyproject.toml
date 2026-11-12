@@ -1,5 +1,5 @@
 [project]
-name = "vericode"
+name = "vericode-cli"
 version = "0.1.0"
 description = "Verify AI-generated code actually works: type-check, test, secret-scan, and CVE-check — locally, no config."
 readme = "README.md"

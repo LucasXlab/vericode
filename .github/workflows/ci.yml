@@ -20,5 +20,7 @@ jobs:
         run: python -m pip install -e . pytest pytest-cov ruff
       - name: Lint
         run: python -m ruff check .
+      - name: Format gate
+        run: python -m ruff format --check .
       - name: Test
         run: python -m pytest --cov=vericode --cov-report=term-missing
