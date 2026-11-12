@@ -112,11 +112,13 @@ def test_run_single_file_and_cli(tmp_path):
     assert res["project_type"] is None
     assert res["checks"] == []
     assert len(res["secrets"]) >= 1
+    assert res["ok"] is False
 
     r = CliRunner().invoke(main, [str(file_path), "--json"])
     assert r.exit_code == 0
     data = json.loads(r.output)
     assert len(data["secrets"]) >= 1
+    assert data["ok"] is False
 
     r_strict = CliRunner().invoke(main, [str(file_path), "--strict"])
     assert r_strict.exit_code == 1

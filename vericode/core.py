@@ -31,6 +31,9 @@ def run(
             "checks": checks,
             "secrets": secrets,
             "cves": cves,
+            # Same key as the directory path: a file that hides a secret is
+            # not ok, and the JSON schema stays identical in both modes.
+            "ok": not secrets,
             "summary": _summarize(checks, secrets, cves),
         }
 
