@@ -20,8 +20,19 @@ from .core import run
 )
 @click.option("--no-cve", is_flag=True, help="Skip dependency CVE lookup (no network).")
 @click.option("--exclude", "exclude", multiple=True, help="Relative path to exclude (repeatable).")
+@click.option(
+    "--reveal-secrets",
+    "reveal_secrets",
+    is_flag=True,
+    help="Print raw secret values instead of masking them (off by default so output is safe to log).",
+)
 def main(
-    target: Path, json_output: bool, strict: bool, no_cve: bool, exclude: tuple[str, ...]
+    target: Path,
+    json_output: bool,
+    strict: bool,
+    no_cve: bool,
+    exclude: tuple[str, ...],
+    reveal_secrets: bool,
 ) -> None:
     """VeriCode — verify AI-generated code actually works.
 
@@ -35,6 +46,7 @@ def main(
             no_cve=no_cve,
             exclude=set(exclude),
             console=console,
+            reveal_secrets=reveal_secrets,
         )
     except Exception as exc:  # noqa: BLE001 - surface any failure cleanly to the user
         console.print(f"[red]Error:[/] {exc}")

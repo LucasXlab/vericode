@@ -94,6 +94,12 @@ vericode .                 # scan the current project
 - **`--json`** for machine consumption, **`--strict`** for CI, **`--no-cve`**
   to skip the network, **`--exclude`** to ignore paths.
 
+> **Secret values are masked by default.** A scanner that prints the credential it
+> found becomes a liability the moment its output is pasted into a CI log or a bug
+> report, so findings show `api_key = '********'` and keep the file/line for you to
+> jump to. Pass `--reveal-secrets` when you deliberately want the raw value (e.g.
+> fixing the line locally) — and don't redirect that output into a shared log.
+
 ## Architecture
 
 ```mermaid
