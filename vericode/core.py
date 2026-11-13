@@ -15,6 +15,7 @@ def run(
     no_cve: bool = False,
     exclude: set[str] | None = None,
     console: Any = None,
+    reveal_secrets: bool = False,
 ) -> dict[str, Any]:
     root = Path(target).resolve()
     if not root.exists():
@@ -25,7 +26,7 @@ def run(
         projects.run_typecheck(root, ptype).to_dict(),
         projects.run_tests(root, ptype).to_dict(),
     ]
-    secrets = [f.to_dict() for f in scanner.scan_path(root, exclude)]
+    secrets = [f.to_dict(reveal=reveal_secrets) for f in scanner.scan_path(root, exclude)]
     cves: list[dict] = []
     if not no_cve:
         dependencies = deps.parse_dependencies(root, ptype)
