@@ -91,6 +91,24 @@ _HEX = re.compile(r"\b[0-9a-fA-F]{32,}\b")
 # high-entropy secrets. Pure-alphanumeric random blobs (the common secret shape) still match.
 _B64 = re.compile(r"\b[A-Za-z0-9]{40,}\b")
 ENTROPY_THRESHOLD = 4.0
+MASK = "********"
+
+
+def mask_value(matched: str) -> str:
+    """Replace the secret part of a matched fragment with a fixed mask.
+
+    Assignment-style matches keep their prefix (``api_key = '********'``) so the
+    finding stays readable; bare token matches are masked entirely.
+    """
+    cut = max(matched.find("="), matched.find(":"))
+    if cut == -1:
+        return MASK
+    prefix = matched[: cut + 1]
+    tail = matched[cut + 1 :].strip()
+    quote = ""
+    if len(tail) >= 2 and tail[0] in "'\"" and tail[-1] == tail[0]:
+        quote = tail[0]
+    return f"{prefix} {quote}{MASK}{quote}"
 
 
 @dataclass
@@ -100,13 +118,20 @@ class Finding:
     line: int
     snippet: str
     severity: str = "high"
+    redacted_snippet: str = ""
 
-    def to_dict(self) -> dict:
+    def to_dict(self, reveal: bool = False) -> dict:
+        """Serialize the finding.
+
+        The raw source line is only emitted when ``reveal`` is True — by default
+        the secret value is masked so that JSON output can be pasted into CI logs
+        without leaking credentials.
+        """
         return {
             "rule": self.rule,
             "file": self.file,
             "line": self.line,
-            "snippet": self.snippet,
+            "snippet": self.snippet if reveal else (self.redacted_snippet or self.snippet),
             "severity": self.severity,
         }
 
@@ -137,18 +162,23 @@ def scan_text(text: str, filename: str = "<text>") -> list[Finding]:
     findings: list[Finding] = []
     for idx, line in enumerate(text.splitlines(), 1):
         for name, pat, sev in SECRET_PATTERNS:
-            if pat.search(line):
-                findings.append(Finding(name, filename, idx, line.strip()[:120], sev))
+            m = pat.search(line)
+            if m:
+                snippet = line.strip()[:120]
+                redacted = line.replace(m.group(0), mask_value(m.group(0)), 1).strip()[:120]
+                findings.append(Finding(name, filename, idx, snippet, sev, redacted))
                 break
         for m in _HEX.findall(line) + _B64.findall(line):
             if len(m) >= 32 and shannon_entropy(m) >= ENTROPY_THRESHOLD:
+                snippet = m[:60] + ("…" if len(m) > 60 else "")
                 findings.append(
                     Finding(
                         "High-entropy string",
                         filename,
                         idx,
-                        m[:60] + ("…" if len(m) > 60 else ""),
+                        snippet,
                         "low",
+                        MASK,
                     )
                 )
     return findings
@@ -156,6 +186,19 @@ def scan_text(text: str, filename: str = "<text>") -> list[Finding]:
 
 def scan_path(root: Path, exclude: set[str] | None = None) -> Iterator[Finding]:
     exclude = exclude or set()
+    if root.is_file():
+        if not _is_text(root):
+            return
+        if str(root) in exclude or root.name in exclude:
+            return
+        try:
+            text = root.read_text(encoding="utf-8", errors="ignore")
+        except OSError:
+            return
+        for f in scan_text(text, root.name):
+            yield f
+        return
+
     for path in root.rglob("*"):
         if not path.is_file():
             continue

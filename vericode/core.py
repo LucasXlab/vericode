@@ -15,17 +15,39 @@ def run(
     no_cve: bool = False,
     exclude: set[str] | None = None,
     console: Any = None,
+    reveal_secrets: bool = False,
 ) -> dict[str, Any]:
     root = Path(target).resolve()
     if not root.exists():
         raise FileNotFoundError(f"Path not found: {root}")
+
+    if root.is_file():
+        ptype = None
+        checks: list[dict] = []
+        secrets = [f.to_dict() for f in scanner.scan_path(root, exclude)]
+        cves: list[dict] = []
+        result: dict[str, Any] = {
+            "target": str(root),
+            "project_type": ptype,
+            "checks": checks,
+            "secrets": secrets,
+            "cves": cves,
+            # Same key as the directory path: a file that hides a secret is
+            # not ok, and the JSON schema stays identical in both modes.
+            "ok": not secrets,
+            "summary": _summarize(checks, secrets, cves),
+        }
+
+        if not json_output:
+            report.render_report(result, console)
+        return result
 
     ptype = projects.detect_primary(root)
     checks = [
         projects.run_typecheck(root, ptype).to_dict(),
         projects.run_tests(root, ptype).to_dict(),
     ]
-    secrets = [f.to_dict() for f in scanner.scan_path(root, exclude)]
+    secrets = [f.to_dict(reveal=reveal_secrets) for f in scanner.scan_path(root, exclude)]
     cves: list[dict] = []
     if not no_cve:
         dependencies = deps.parse_dependencies(root, ptype)
