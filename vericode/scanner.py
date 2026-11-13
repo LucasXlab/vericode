@@ -74,6 +74,11 @@ SECRET_PATTERNS: list[tuple[str, re.Pattern[str], str]] = [
     ("Stripe Secret Key", re.compile(r"sk_live_[0-9A-Za-z]{24,}"), "high"),
     ("Stripe Restricted Key", re.compile(r"rk_live_[0-9A-Za-z]{24,}"), "high"),
     ("GitHub Token", re.compile(r"ghp_[0-9A-Za-z]{36}"), "high"),
+    (
+        "Terraform AWS Secret Key",
+        re.compile(r'(?i)(?:aws_)?secret(?:_access)?_key\s*=\s*"?[A-Za-z0-9/+=]{20,}'),
+        "high",
+    ),
     ("GitLab Token", re.compile(r"glpat-[0-9A-Za-z_-]{20,}"), "high"),
     ("npm Token", re.compile(r"npm_[0-9A-Za-z]{36}"), "high"),
     ("JWT", re.compile(r"eyJ[A-Za-z0-9_-]+\.eyJ[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+"), "high"),

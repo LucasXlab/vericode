@@ -53,3 +53,8 @@ def test_scan_path_skips_git(tmp_path):
 def test_shannon_entropy_uniform_high():
     assert scanner.shannon_entropy("abcdefgh") > 2.5
     assert scanner.shannon_entropy("") == 0.0
+
+def test_terraform_aws_secret_key():
+    secret = "wJalrXUtnFEMI" + "K7MDENGbPxRfiCYEXAMPLEKEY"
+    line = 'aws_secret_access_key = "' + secret + '"'
+    assert any(x.rule == "Terraform AWS Secret Key" for x in scanner.scan_text(line))
