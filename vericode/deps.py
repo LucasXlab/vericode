@@ -2,13 +2,17 @@
 
 from __future__ import annotations
 
+import hashlib
 import json
+import time
 from dataclasses import dataclass
 from pathlib import Path
 
 import requests
 
 OSV_QUERY_URL = "https://api.osv.dev/v1/query"
+CACHE_DIR = Path.home() / ".cache" / "vericode"
+CACHE_TTL = 86400  # 1 day
 
 
 @dataclass
@@ -141,21 +145,70 @@ def parse_dependencies(root: Path, ptype: str | None = None) -> list[Dependency]
     return deps
 
 
+def _cache_key(d: Dependency) -> str:
+    return f"{d.ecosystem}:{d.name}:{d.version}"
+
+
+def _cache_path(d: Dependency) -> Path:
+    key = _cache_key(d)
+    h = hashlib.sha256(key.encode()).hexdigest()
+    return CACHE_DIR / f"{h}.json"
+
+
+def _get_from_cache(d: Dependency) -> list[Vuln] | None:
+    path = _cache_path(d)
+    if not path.exists():
+        return None
+    try:
+        data = json.loads(path.read_text(encoding="utf-8"))
+        if time.time() - data.get("ts", 0) > CACHE_TTL:
+            return None
+        return [
+            Vuln(v["name"], v["version"], v["id"], v["summary"])
+            for v in data.get("vulns", [])
+        ]
+    except (json.JSONDecodeError, OSError, KeyError):
+        return None
+
+
+def _save_to_cache(d: Dependency, vulns: list[Vuln]) -> None:
+    try:
+        CACHE_DIR.mkdir(parents=True, exist_ok=True)
+        path = _cache_path(d)
+        data = {
+            "ts": time.time(),
+            "vulns": [v.to_dict() for v in vulns],
+        }
+        path.write_text(json.dumps(data), encoding="utf-8")
+    except OSError:
+        pass  # ignore cache write failures
+
+
 def query_osv(deps: list[Dependency], timeout: int = 20) -> list[Vuln]:
-    """Query OSV for each dependency. Keyless & anonymous; degrades to [] on error."""
+    """Query OSV for each dependency. Keyless & anonymous; degrades to [] on error.
+    Uses a disk TTL cache in ~/.cache/vericode keyed by ecosystem:name:version.
+    """
     if not deps:
         return []
     vulns: list[Vuln] = []
     try:
         for d in deps:
+            cached = _get_from_cache(d)
+            if cached is not None:
+                vulns.extend(cached)
+                continue
             resp = requests.post(
                 OSV_QUERY_URL,
                 json={"package": {"name": d.name, "ecosystem": d.ecosystem}, "version": d.version},
                 timeout=timeout,
             )
             resp.raise_for_status()
-            for v in resp.json().get("vulns", []):
-                vulns.append(Vuln(d.name, d.version, v.get("id", ""), v.get("summary", "")))
+            dep_vulns = [
+                Vuln(d.name, d.version, v.get("id", ""), v.get("summary", ""))
+                for v in resp.json().get("vulns", [])
+            ]
+            _save_to_cache(d, dep_vulns)
+            vulns.extend(dep_vulns)
     except (requests.RequestException, ValueError):
         return []
     return vulns

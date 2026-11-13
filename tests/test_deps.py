@@ -79,3 +79,46 @@ def test_parse_dependencies_dispatch(tmp_path):
     (tmp_path / "requirements.txt").write_text("requests==2.19.0\n")
     d = deps.parse_dependencies(tmp_path, "python")
     assert any(x.name == "requests" for x in d)
+
+
+import time
+from unittest.mock import patch
+
+def test_query_osv_uses_cache(tmp_path, monkeypatch):
+    # Redirect cache to tmp_path
+    monkeypatch.setattr(deps, "CACHE_DIR", tmp_path / "cache")
+
+    call_count = {"n": 0}
+
+    class FakeResp:
+        def raise_for_status(self):
+            pass
+
+        def json(self):
+            return {"vulns": [{"id": "GHSA-xxxx", "summary": "bad"}]}
+
+    def fake_post(*a, **k):
+        call_count["n"] += 1
+        return FakeResp()
+
+    monkeypatch.setattr(requests, "post", fake_post)
+
+    dep = deps.Dependency("PyPI", "requests", "2.19.0")
+    # First call hits network
+    v1 = deps.query_osv([dep])
+    assert call_count["n"] == 1
+    assert len(v1) == 1
+
+    # Second call should use cache
+    v2 = deps.query_osv([dep])
+    assert call_count["n"] == 1  # no additional call
+    assert len(v2) == 1 and v2[0].id == "GHSA-xxxx"
+
+    # Expired cache should re-query
+    cache_file = list((tmp_path / "cache").glob("*.json"))[0]
+    data = json.loads(cache_file.read_text())
+    data["ts"] = time.time() - deps.CACHE_TTL - 10
+    cache_file.write_text(json.dumps(data))
+    v3 = deps.query_osv([dep])
+    assert call_count["n"] == 2
+    assert len(v3) == 1
