@@ -7,11 +7,10 @@ on:
 
 jobs:
   test:
-    # Pin to 24.04: the 3.9 wheel/setup is no longer available on ubuntu-latest (26.04).
     runs-on: ubuntu-24.04
     strategy:
       matrix:
-        python-version: ["3.9", "3.10", "3.11", "3.12", "3.13"]
+        python-version: ["3.10", "3.11", "3.12", "3.13"]
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
